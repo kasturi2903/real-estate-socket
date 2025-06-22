@@ -114,13 +114,26 @@
 // });
 import express from "express";
 import http from "http";
+import cors from "cors";
 import { Server } from "socket.io";
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// ✅ Enable CORS in Express
+app.use(cors({
+  origin: "https://real-estate-client-bia0.onrender.com", // ✅ no trailing slash
+  methods: ["GET", "POST"],
+  credentials: true,
+}));
+
+// ✅ Handle preflight for all routes (esp. for POST)
+app.options("*", cors());
+
+// ✅ Create HTTP server
 const server = http.createServer(app);
 
+// ✅ Socket.IO with CORS settings
 const io = new Server(server, {
   cors: {
     origin: "https://real-estate-client-bia0.onrender.com",
@@ -129,6 +142,7 @@ const io = new Server(server, {
   },
 });
 
+// ✅ In-memory tracking of online users
 let onlineUser = [];
 
 const addUser = (userId, socketId) => {
@@ -145,6 +159,7 @@ const getUser = (userId) => {
   return onlineUser.find(user => user.userId === userId);
 };
 
+// ✅ Socket.IO events
 io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
@@ -161,14 +176,16 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     removeUser(socket.id);
+    console.log("❌ User disconnected:", socket.id);
   });
 });
 
-// 👇 Required for Render to detect it's working
+// ✅ Render health check endpoint
 app.get("/", (req, res) => {
-  res.send("Socket server is live 🎉");
+  res.send("✅ Socket server is live 🎉");
 });
 
+// ✅ Start server
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Socket server running on port ${PORT}`);
 });
