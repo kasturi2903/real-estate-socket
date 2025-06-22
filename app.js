@@ -105,6 +105,7 @@ app.get("/", (req, res) => {
 });
 
 // ✅ Step 7: Start the server
-server.listen(PORT, () => {
+// ✅ Step 7: Start the server
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Socket server listening on port ${PORT}`);
 });
