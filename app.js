@@ -45,23 +45,27 @@
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
+import dotenv from "dotenv";
 
-// Step 1: Create an Express app
+// ✅ Load environment variables from .env
+dotenv.config();
+
+// Step 1: Create Express app and get PORT from env
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Step 2: Create an HTTP server and bind Express to it
+// Step 2: Create HTTP server
 const server = http.createServer(app);
 
-// Step 3: Create Socket.IO server and attach to HTTP server
+// Step 3: Initialize Socket.IO with CORS setup
 const io = new Server(server, {
   cors: {
-    origin: "https://real-estate-client-bia0.onrender.com", // 🔁 your frontend URL
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   },
 });
 
-// Step 4: Setup basic in-memory online users logic
+// Step 4: Online user management
 let onlineUser = [];
 
 const addUser = (userId, socketId) => {
@@ -79,7 +83,7 @@ const getUser = (userId) => {
   return onlineUser.find((user) => user.userId === userId);
 };
 
-// Step 5: Handle socket events
+// Step 5: Handle Socket.IO connections
 io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
@@ -99,13 +103,12 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Step 6: Add a basic HTTP route so Render detects it's running
+// ✅ Step 6: Render health check
 app.get("/", (req, res) => {
   res.send("✅ Socket server is running.");
 });
 
-// ✅ Step 7: Start the server
-// ✅ Step 7: Start the server
+// ✅ Step 7: Start server and bind to 0.0.0.0 for Render
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Socket server listening on port ${PORT}`);
 });
