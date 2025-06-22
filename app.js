@@ -42,19 +42,18 @@
 
 // io.listen(4000);
 // console.log("Socket server is running on port 4000");
-import { Server } from "socket.io";
+import express from "express";
 import http from "http";
+import { Server } from "socket.io";
 
-// ✅ Use hardcoded port (optional fallback)
-const PORT = 4000;
+const app = express();  // ✅ create express app
+const server = http.createServer(app); // ✅ attach HTTP server
+const PORT = process.env.PORT || 4000;
 
-// ✅ Create HTTP server
-const server = http.createServer();
-
-// ✅ Setup socket with CORS to your deployed frontend
+// ✅ Setup CORS + credentials
 const io = new Server(server, {
   cors: {
-    origin: "https://real-estate-client-bia0.onrender.com",
+    origin: "https://real-estate-client-bia0.onrender.com", // your frontend URL
     credentials: true,
   },
 });
@@ -95,7 +94,12 @@ io.on("connection", (socket) => {
   });
 });
 
-// ✅ Start server
+// ✅ Add a health check route so Render knows it's working
+app.get("/", (req, res) => {
+  res.send("Socket server is running ✅");
+});
+
+// ✅ Start the HTTP server
 server.listen(PORT, () => {
   console.log(`Socket server running on port ${PORT}`);
 });
